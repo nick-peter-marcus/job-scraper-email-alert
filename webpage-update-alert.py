@@ -1,6 +1,5 @@
 def main():
     # Import libraries
-    #from urllib.request import urlopen, Request
     import requests
     import hashlib
     import time
@@ -20,6 +19,8 @@ def main():
             print(f'Running... ({datetime.now():%Y-%m-%d %H:%M:%S})')
         else:
             print(f'Something has changed at {datetime.now():%Y-%m-%d %H:%M:%S}!')
+        
+        hash = new_hash
 
 
 if __name__ == '__main__':

@@ -1,10 +1,14 @@
-# webpage-update-alert
-Tool for alerting me when the content of a webpage changes.
+# App for job alerts and email notification.
 
-We'll use Python to fetch the content of webpage and hash this information. After a certain amount of time, we'll fetch again and compare the new with the old hash. If it changed, print a message.
+job_scrape.py acts as the central script, collecting info from individual scraping modules under <i>/websites/</i>, which each handles a different webpage (i.e. career sites from relevant companies). 
 
-The project's steps might look like this:
-1. Use an examplary website to have control over the changes.
-2. Extend the alert to not only display <i>that</i> something has changed, but <i>what</i> has changed.
-3. Use the extracted info to alert via email.
-4. Apply to a real website.
+Each scraper module works as follows:
+1. Scrape job info from webpage containing current job listings.
+2. Process and store info in a dictionary, having the job id (if applicable) as key.
+3. Compare the dict of scraped postings with the version of last execution.
+4. When new job postings are found, their info is collected in a string for later use in an email.
+5. Returns a dictionary containing email-text in plain and html format, or None when there are no updates.
+
+After collecting the info of each module, job_scrape.py gathers the new jobs in one email message (a MIMEMultipart class) and sends it via email.
+
+This script is run as a scheduled task on <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>.

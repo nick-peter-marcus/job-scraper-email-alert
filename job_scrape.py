@@ -5,13 +5,14 @@ def main():
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
     from websites.gfk.gfk_scrape import gfk
+    from websites.toast.toast_scrape import toast
 
     # initialize empty lists to story body texts for job alert message
     ls_text_body = []
     ls_html_body = []
 
     # call scraping function of each company and store listings as list (if not empty)
-    company_funcs = [gfk]
+    company_funcs = [gfk, toast]
     for func in company_funcs:
         company_jobs = func()
         if company_jobs:

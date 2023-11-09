@@ -41,8 +41,6 @@ def toast():
             # add to dict of jobs being scraped (as there is no id, link will be used as unique identifier/key)
             current_jobs_dict.update({link: {'title': title, 'city': city}})
 
-    # TO DO: FILTER LIST BASED ON CRITERIA: city in [Boston, NY, RI, Remote]
-
     # compare current jobs with last saved jobs (no changes -> return None and end function)
     if current_jobs_dict == saved_jobs_dict:
         print('No changes at Toast.')
@@ -54,11 +52,15 @@ def toast():
         with open('websites/toast/toast_current_jobs_dict.pkl', 'wb') as f:
             pickle.dump(current_jobs_dict, f)
 
-    if new_jobs:
+    # Filter jobs (dict keys) according to filter condition (here: job location)
+    filter_cond = ['Remote', 'Boston, Massachusetts, United States']
+    new_filtered_jobs = [job for job in current_jobs_dict if current_jobs_dict[job]['city'] in filter_cond]
+
+    if new_filtered_jobs:
         # create email message (CHANGE ID; ADD LOCATION)
         text_body = 'New Jobs at Toast:\n'
         html_body = '<h1>New Jobs at Toast:</h1>\n'
-        for job in new_jobs:
+        for job in new_filtered_jobs:
             text_body += (f'Title: {current_jobs_dict[job]["title"]}:\n'
                           f'Link: {job}\n'
                           f'Location: {current_jobs_dict[job]["city"]}\n\n'
@@ -69,7 +71,7 @@ def toast():
                           f'Location: {current_jobs_dict[job]["city"]}<br><br>'
                          )
         print('New jobs at Toast.')
-        return {"text": text_body, "html" : html_body}
+        return {"text": text_body, "html": html_body}
     else:
         print('No new jobs at Toast.')
         return None

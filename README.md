@@ -1,6 +1,6 @@
 # App for job alerts and email notification.
 
-job_scrape.py acts as the central script, collecting info from individual scraping modules under <i>/websites/</i>, which each handles a different webpage (i.e. career sites from relevant companies). 
+job_scrape.py acts as the central script, collecting data from individual scraping modules under <i>/websites/</i>, which each handles a different webpage (i.e. career sites from relevant companies). 
 
 Each scraper module works as follows:
 1. Scrape job info from webpage containing current job listings.

@@ -7,7 +7,8 @@ def gfk():
     from datetime import timedelta, date
 
     # get and parse webpage
-    r = requests.get('https://www.gfk.com/careers/search-for-jobs?locations5=locationsBoston').text
+    r = requests.get('https://www.gfk.com/careers/search-for-jobs?country_codes29=country_codesUS').text
+    #r = requests.get('https://www.gfk.com/careers/search-for-jobs?locations5=locationsBoston').text
     #r = requests.get('https://www.gfk.com/careers/search-for-jobs').text
     soup = BeautifulSoup(r, 'html.parser')
     jobs = soup.find_all('a', class_='job_item')

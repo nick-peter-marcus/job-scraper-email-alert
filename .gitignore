@@ -1,3 +1,4 @@
 *_lib.py
 /lib*
 /websites/chewy/_js
+*.pkl

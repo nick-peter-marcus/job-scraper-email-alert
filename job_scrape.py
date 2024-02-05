@@ -8,24 +8,44 @@ def main():
     from websites.toast.toast_scrape import toast
     from websites.chewy.chewy_scrape_selenium import chewy
 
-    # initialize empty lists to story body texts for job alert message
+
+    """
+    CREATE EMAIL BODY TEXTS FROM INDIVIDUAL CRAWLERS
+    """
+    # initialize empty lists to store body texts for job alert message
     ls_text_body = []
     ls_html_body = []
 
-    # call scraping function of each company and store listings as list (if not empty)
+    # call scraping function of each company (return dictionary)
     company_funcs = [gfk, toast, chewy]
-    for func in company_funcs:
-        company_jobs = func()
-        if company_jobs:
-            ls_text_body.append(company_jobs["text"])
-            ls_html_body.append(company_jobs["html"])
+    company_names = ['GfK', 'Toast', 'Chewy']
+    for func, name in zip(company_funcs, company_names):
+        new_company_jobs = func()
+        if new_company_jobs:
+            text_body = f'New Jobs at {name}:\n'
+            html_body = f'<h1>New Jobs at {name}:</h1>\n'
+            for job_details in new_company_jobs.values():
+                title = job_details['title']
+                link = job_details['link']
+                location = job_details['location']
+                date = job_details['date_posted']
 
+                text_body += (f'Title: {title}:\nLink: {link}\nLocation: {location}\n\n')
+                html_body += (f'<a href = "{link}"><b>{title}</b></a><br>Location: {location}<br><br>')
+        
+            ls_text_body.append(text_body)
+            ls_html_body.append(html_body)
+        
     # create final body messages by joining individual body texts
     text_body = '<br><hr><br>'.join(ls_text_body)
     html_body = '<br><hr><br>'.join(ls_html_body)
 
-    # send job alert per mail if new jobs were found (i.e. bodies not empty)
-    if text_body and html_body:
+
+    """
+    SET UP AND SEND EMAIL
+    """
+    # send job alert per mail if new jobs were found (i.e. if bodies are not empty)
+    if text_body or html_body:
         # include mail account credentials from environment variables
         EMAIL_ADDRESS = os.environ.get('USER_EMAIL')
         EMAIL_PASSWORD = os.environ.get('USER_PW')
@@ -45,11 +65,10 @@ def main():
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ADDRESS, EMAIL_TO, msg.as_string())
 
-        print("New jobs, mail sent.")
+        print("New jobs, email notification sent.")
     else:
         print("No new jobs.")
 
 
 if __name__ == '__main__':
     main()
-    

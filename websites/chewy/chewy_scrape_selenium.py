@@ -6,16 +6,12 @@ def chewy():
     from selenium import webdriver
     from selenium.webdriver.common.by import By
 
-    # open last saved job postings (create empty dict if nonexistent)
-    try:
-        with open('websites/chewy/chewy_current_jobs_dict.pkl', 'rb') as f:
-            saved_jobs_dict = pickle.load(f)
-    except FileNotFoundError:
-        saved_jobs_dict = {}
- 
-    # create dict to store scraped jobs
-    current_jobs_dict = {}
-  
+    company_name = 'chewy'
+
+
+    """
+    PARSE AND SCRAPE WEBPAGES FOR CURRENT JOB POSTINGS
+    """
     # create instance of Chrome WebDriver
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--no-sandbox")
@@ -32,21 +28,21 @@ def chewy():
     n_pages = math.ceil(n_jobs/10)
 
     # scrape jobs on all search result pages
+    current_jobs_dict = {}
     for page in range(1,n_pages+1):
         jobs = driver.find_elements(By.CLASS_NAME, 'jobs-list-item')
-
         for job in jobs:
             # extraxt id, title, city, link and date
             id = job.find_element(By.TAG_NAME, 'a').get_attribute('data-ph-at-job-id-text')
             title = job.find_element(By.TAG_NAME, 'a').text
-            city = job.find_element(By.TAG_NAME, 'a').get_attribute('data-ph-at-job-location-text')
+            link = job.find_element(By.TAG_NAME, 'a').get_attribute('href')
+            location = job.find_element(By.TAG_NAME, 'a').get_attribute('data-ph-at-job-location-text')
             date_posted_raw = job.find_element(By.TAG_NAME, 'a').get_attribute('data-ph-at-job-post-date-text')
             date_posted = datetime.strptime(date_posted_raw, '%Y-%m-%dT%H:%M:%S.%f%z').date()
-            link = job.find_element(By.TAG_NAME, 'a').get_attribute('href')
             
             # add to dict of jobs being scraped
             current_jobs_dict.update({id: {'title': title, 
-                                           'city': city, 
+                                           'location': location, 
                                            'date_posted': date_posted, 
                                            'link': link}})
         
@@ -59,35 +55,30 @@ def chewy():
     # Quit WebDriver session
     driver.quit()
 
-    # compare current jobs with last saved jobs (no changes -> return None and end function)
-    if current_jobs_dict == saved_jobs_dict:
-        print('No changes at Chewy.')
-        return None
-    else:
-        # create list of ids from new jobs
-        new_jobs = [job for job in current_jobs_dict if job not in saved_jobs_dict]
-        # store current state of job postings for next execution
-        with open('websites/chewy/chewy_current_jobs_dict.pkl', 'wb') as f:
-            pickle.dump(current_jobs_dict, f)
 
+    """
+    LOAD RESULTS OF LAST EXECUTION - STORE CURRENT RESULTS
+    """
+    # open last saved job postings (create empty dict if nonexistent)
+    try:
+        with open(f'websites/{company_name}/{company_name}_current_jobs_dict.pkl', 'rb') as f:
+            saved_jobs_dict = pickle.load(f)
+    except FileNotFoundError:
+        saved_jobs_dict = {} 
+
+    # store current state of job postings for next execution
+    with open(f'websites/{company_name}/{company_name}_current_jobs_dict.pkl', 'wb') as f:
+        pickle.dump(current_jobs_dict, f)
+
+
+    """
+    FILTER JOBS AND RETURN RESULTS AS DICTIONARY
+    """
+    # create list containing only ids of new jobs
+    new_jobs = [job for job in current_jobs_dict if job not in saved_jobs_dict]
+
+    # return dict with new job postings if any, otherwise return None
     if new_jobs:
-        # create email message
-        text_body = 'New Jobs at Chewy:\n'
-        html_body = '<h1>New Jobs at Chewy:</h1>\n'
-        for job in new_jobs:
-            text_body += (f'Title: {current_jobs_dict[job]["title"]}:\n'
-                          f'Link: {current_jobs_dict[job]["link"]}\n'
-                          #f'Location: {current_jobs_dict[job]["city"]}\n'
-                          f'Posted on: {current_jobs_dict[job]["date_posted"]}\n\n'
-                         )
-            html_body += (f'<a href = "{current_jobs_dict[job]["link"]}">'
-                          f'<b>{current_jobs_dict[job]["title"]}</b>'
-                          f'</a><br>'
-                          #f'Location: {current_jobs_dict[job]["city"]}<br>'
-                          f'Posted on: {current_jobs_dict[job]["date_posted"]}<br><br>'
-                         )
-        print('New jobs at Chewy.')
-        return {"text": text_body, "html" : html_body}
+        return {job: current_jobs_dict[job] for job in new_jobs}
     else:
-        print('No new jobs at Chewy.')
         return None

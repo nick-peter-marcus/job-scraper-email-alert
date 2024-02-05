@@ -2,16 +2,16 @@
 
 I built this Python script to get email notifications whenever new job ads have been posted on career sites of companies relevant to me.
 
-There is one central modular script, <b>job_scrape.py</b>, calling the individual functions/scrapers in <i>/websites/</i> which each handle a different webpage.
+There is one central modular script, <b>job_scrape.py</b>, calling the individual functions/scrapers in <i>/websites/</i> which each handles scraping a different webpage.
 
 Each scraper module works as follows:
 1. Parse<i>*</i> webpages containing current job listings.
-2. Process and store job data in a dictionary, utilizing job id (if applicable) as key.
-3. Compare the dict of current postings with the stored version of the last execution.
-4. Extract only new postings and prepare their details to be displayed in the email.
-5. Returns a dictionary containing email-texts in plain and html format, or None when there are no now new jobs.
+2. Process and store job details in a dictionary.
+3. Compare the current postings with those stored at the last execution.
+4. Extract only new postings and, if applicable, filter on relevant criteria (e.g. location).
+5. Return a dictionary containing the details of the filtered postings, or None when there are no now new jobs.
 
-The individual email texts are joined in job_scrape.py as a MIMEMultipart class, a secured SMTP connection is started, and the email will be send.
+The results are then joined as formatted email texts (MIMEMultipart class) in job_scrape.py. A secured SMTP connection will be started, and the email will be send.
 
 This script is executed every 24h as a scheduled task on <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>.
 

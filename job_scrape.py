@@ -4,21 +4,23 @@ def main():
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
+    # import scraping modules
     from websites.gfk.gfk_scrape import gfk
     from websites.toast.toast_scrape import toast
     from websites.chewy.chewy_scrape_selenium import chewy
+    from websites.wtw.wtw_scrape import wtw
 
 
     """
-    CREATE EMAIL BODY TEXTS FROM INDIVIDUAL CRAWLERS
+    POPULATE EMAIL BODY TEXTS WITH RESULTS OF SCRAPER MODULES
     """
     # initialize empty lists to store body texts for job alert message
     ls_text_body = []
     ls_html_body = []
 
     # call scraping function of each company (return dictionary)
-    company_funcs = [gfk, toast, chewy]
-    company_names = ['GfK', 'Toast', 'Chewy']
+    company_funcs = [gfk, toast, chewy, wtw]
+    company_names = ['GfK', 'Toast', 'Chewy', 'WTW']
     for func, name in zip(company_funcs, company_names):
         new_company_jobs = func()
         if new_company_jobs:
@@ -42,7 +44,7 @@ def main():
 
 
     """
-    SET UP AND SEND EMAIL
+    SET UP CONNECTION AND SEND EMAIL
     """
     # send job alert per mail if new jobs were found (i.e. if bodies are not empty)
     if text_body or html_body:

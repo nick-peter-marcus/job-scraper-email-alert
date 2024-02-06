@@ -27,7 +27,7 @@ def wtw():
         location = job['primary_city']
         date_posted = job['open_date']
         
-        # add to dict of jobs being scraped (as there is no id, link will be used as unique identifier/key)
+        # add to dict of jobs being scraped
         current_jobs_dict.update({id: {'title': title,
                                          'location': location,
                                          'date_posted': date_posted,

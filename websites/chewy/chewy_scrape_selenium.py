@@ -49,8 +49,13 @@ def chewy():
         # if applicable, navigate to next page of search results
         if page < n_pages:
             next_page = str(page+1)
-            next_page_link = driver.find_element(By.LINK_TEXT, next_page)
-            next_page_link.click()
+            # Last page sometimes not existent, NoSuchElementException thrown.
+            try:
+                next_page_link = driver.find_element(By.LINK_TEXT, next_page)
+            except:
+                pass
+            else:
+                next_page_link.click()
 
     # Quit WebDriver session
     driver.quit()

@@ -19,9 +19,12 @@ def main():
     ls_html_body = []
 
     # call scraping function of each company (return dictionary)
-    company_funcs = [gfk, toast, chewy, wtw]
-    company_names = ['GfK', 'Toast', 'Chewy', 'WTW']
-    for func, name in zip(company_funcs, company_names):
+    company_funcs = {'GfK': gfk, 
+                     'Toast': toast, 
+                     'Chewy': chewy, 
+                     'WTW': wtw}
+
+    for name, func in company_funcs.items():
         new_company_jobs = func()
         if new_company_jobs:
             text_body = f'New Jobs at {name}:\n'

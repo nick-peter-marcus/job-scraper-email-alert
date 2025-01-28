@@ -1,6 +1,7 @@
 def main():
     # import libraries
     import os
+    import re
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -9,6 +10,21 @@ def main():
     from websites.toast.toast_scrape import toast
     from websites.chewy.chewy_scrape_selenium import chewy
     from websites.wtw.wtw_scrape import wtw
+
+
+    def contains_words(input_string: str, search_words: list) -> bool:
+        """ Checks whether a string contains specified key words
+        
+        Args: 
+            input_string (str): The text to be searched in
+            search_words (list): A list of words to be searched
+
+        Returns:
+            bool: True if any of the search_words appear in input_string.
+        """
+        re_search_terms = "|".join(search_words)
+        matches = re.findall(re_search_terms, input_string.lower())
+        return len(matches) > 0
 
 
     """
@@ -35,8 +51,15 @@ def main():
                 location = job_details['location']
                 date = job_details['date_posted']
 
+                search_terms = ["data", "analyst", "analysis", "analytics", "ml", "machine learning"]
+                highlight_job = contains_words(title, search_terms)
+                if highlight_job:
+                    html_body += (f'<a href="{link}" style="color:green;"><b>{title}</b></a>'
+                                  f'<br>Location: {location}<br><br>')
+                else:
+                    html_body += (f'<a href="{link}"><b>{title}</b></a>'
+                                  f'<br>Location: {location}<br><br>')
                 text_body += (f'Title: {title}:\nLink: {link}\nLocation: {location}\n\n')
-                html_body += (f'<a href = "{link}"><b>{title}</b></a><br>Location: {location}<br><br>')
         
             ls_text_body.append(text_body)
             ls_html_body.append(html_body)

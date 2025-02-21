@@ -2,3 +2,4 @@
 /lib*
 /websites/chewy/_js
 *.pkl
+.env

@@ -3,6 +3,7 @@ def main():
     import os
     import re
     import smtplib
+    from dotenv import load_dotenv
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
     # import scraping modules
@@ -48,7 +49,7 @@ def main():
             continue
 
         # initialize email bodies
-        html_body = f'<h1>New Jobs at {website_name}:</h1><br><small><i>{summary}</i></small><br><br>'
+        html_body = f'<big><b>New Jobs at {website_name}:</b></big> <br> <small><i>{summary}</i></small> <br><br>'
         text_body = f'New Jobs at {website_name}:\n{summary}\n\n'
 
         # gather information for each job
@@ -72,11 +73,13 @@ def main():
 
             # Add job info to mail bodies
             html_body += (f'<a href="{link}" {font_style}><b>{title}</b></a>'
-                            f'<br>Company: {company}'
-                            f'<br>Location(s): {location}'
-                            f'<br>Posted/Deadline: {date}')
-            html_body += f'<br>Details: {details}<br><br>' if details else '<br><br>'
+                          f'<br>Company: {company}'
+                          f'<br>Location(s): {location}'
+                          f'<br>Posted/Deadline: {date}')
             text_body += (f'Title: {title}:\nLink: {link}\nLocation: {location}')
+            
+            # Add element "details" to bodies if existent
+            html_body += f'<br>Details: {details}<br><br>' if details else '<br><br>'
             text_body += f'\nDetails: {details}\n\n' if details else '\n\n'
     
         ls_text_body.append(text_body)
@@ -93,9 +96,10 @@ def main():
     # send job alert per mail if new jobs were found (i.e. if bodies are not empty)
     if text_body or html_body:
         # include mail account credentials from environment variables
-        EMAIL_ADDRESS = os.environ.get('USER_EMAIL')
-        EMAIL_PASSWORD = os.environ.get('USER_PW')
-        EMAIL_TO = os.environ.get('RECEIVER_EMAIL')
+        load_dotenv()
+        EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
+        EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
+        EMAIL_TO = os.getenv('EMAIL_TO')
         
         # set up email message
         msg = MIMEMultipart('alternative')

@@ -34,7 +34,6 @@ def goodjobs_eu():
         soup = BeautifulSoup(r.text, "html.parser")
         
         jobcards = soup.find_all("a", class_="jobcard")
-        print(f"Scraping page {page}/{n_pages}, {len(jobcards)} jobs found.")
 
         for jobcard in jobcards:
             title = jobcard.find("h3").text.strip()
@@ -64,7 +63,6 @@ def goodjobs_eu():
                                              "details": " | ".join([remote, full_time, job_type]),
                                              "link": link}})
 
-    print(f"Scraping completed, {len(current_jobs_dict)} jobs stored.")
     """
     LOAD RESULTS OF LAST EXECUTION - STORE CURRENT RESULTS
     """

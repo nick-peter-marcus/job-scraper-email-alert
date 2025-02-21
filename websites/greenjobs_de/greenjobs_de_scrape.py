@@ -33,6 +33,8 @@ def greenjobs_de():
 
         for job_row in job_rows:
             link = job_row.find("a")["href"].replace(" ", "")
+            if link[:5] != "https":
+                link = "https://www.greenjobs.de" + link
 
             tds = job_row.find_all("td")
             if len(tds) <= 1:
@@ -75,7 +77,7 @@ def greenjobs_de():
     
     # return dict with new job postings if any, otherwise return None
     if new_jobs:
-        summary = f"{n_jobs_found} jobs found, {n_jobs_scraped} scraped, {len(current_jobs_dict)} stored, {len(new_jobs)} new jobs."
+        summary = f"{n_jobs_found} jobs found, {n_jobs_scraped} scraped, {len(current_jobs_dict)} stored, {len(new_jobs)} new."
         return (summary, new_jobs)
     else:
         return (None, None)

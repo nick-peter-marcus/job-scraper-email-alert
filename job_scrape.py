@@ -9,6 +9,7 @@ def main():
     # from websites.gfk.gfk_scrape import gfk
     # from websites.wtw.wtw_scrape import wtw
     from websites.goodjobs_eu.goodjobs_eu_scrape import goodjobs_eu
+    from websites.greenjobs_de.greenjobs_de_scrape import greenjobs_de
 
 
     def contains_words(input_string: str, search_words: list) -> bool:
@@ -35,7 +36,8 @@ def main():
     # company_funcs = {'GfK': gfk, 
     #                  'WTW': wtw,
     #                  'Goodjobs EU': goodjobs_eu}
-    company_funcs = {'Goodjobs EU': goodjobs_eu}
+    company_funcs = {'Goodjobs EU': goodjobs_eu,
+                     'Greenjobs DE': greenjobs_de}
 
     for website_name, website_func in company_funcs.items():
         # make scraping function call.
@@ -46,8 +48,8 @@ def main():
             continue
 
         # initialize email bodies
-        html_body = f'<h1>New Jobs at {website_name}:</h1>\n<small><i>{summary}</i></small>\n\n'
-        text_body = f'New Jobs at {website_name}:\n{summary}\n'
+        html_body = f'<h1>New Jobs at {website_name}:</h1><br><small><i>{summary}</i></small><br><br>'
+        text_body = f'New Jobs at {website_name}:\n{summary}\n\n'
 
         # gather information for each job
         for job_details in new_company_jobs.values():
@@ -56,7 +58,7 @@ def main():
             company = job_details['company']
             location = job_details['location']
             date = job_details['date_posted']
-            details = job_details['details']
+            details = job_details['details'] if 'details' in job_details else None
 
             # Highlight titles if search words appear
             search_terms = ["data", "analyst", "analysis", "analytics", "machine learning"]
@@ -70,11 +72,12 @@ def main():
 
             # Add job info to mail bodies
             html_body += (f'<a href="{link}" {font_style}><b>{title}</b></a>'
-                            f'<br>{company}'
-                            f'<br>Location: {location}'
-                            f'<br>Posted/Deadline: {date}'
-                            f'<br>Details: {details}<br><br>')
-            text_body += (f'Title: {title}:\nLink: {link}\nLocation: {location}\nDetails: {details}\n\n')
+                            f'<br>Company: {company}'
+                            f'<br>Location(s): {location}'
+                            f'<br>Posted/Deadline: {date}')
+            html_body += f'<br>Details: {details}<br><br>' if details else '<br><br>'
+            text_body += (f'Title: {title}:\nLink: {link}\nLocation: {location}')
+            text_body += f'\nDetails: {details}\n\n' if details else '\n\n'
     
         ls_text_body.append(text_body)
         ls_html_body.append(html_body)

@@ -87,6 +87,6 @@ def goodjobs_eu():
     # return dict with new job postings if any, otherwise return None
     if new_jobs:
         summary = f"{n_jobs} jobs found, {len(current_jobs_dict)} scraped, {len(new_jobs)} new jobs."
-        return summary, new_jobs
+        return (summary, new_jobs)
     else:
-        return None
+        return (None, None)

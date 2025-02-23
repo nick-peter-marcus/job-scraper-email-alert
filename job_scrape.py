@@ -7,8 +7,6 @@ def main():
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
     # import scraping modules
-    # from websites.gfk.gfk_scrape import gfk
-    # from websites.wtw.wtw_scrape import wtw
     from websites.goodjobs_eu.goodjobs_eu_scrape import goodjobs_eu
     from websites.greenjobs_de.greenjobs_de_scrape import greenjobs_de
 
@@ -34,16 +32,14 @@ def main():
     ls_html_body = []
 
     # call scraping function of each website (return dictionary)
-    # company_funcs = {'GfK': gfk, 
-    #                  'WTW': wtw,
-    #                  'Goodjobs EU': goodjobs_eu}
     company_funcs = {'Goodjobs EU': goodjobs_eu,
                      'Greenjobs DE': greenjobs_de}
 
     for website_name, website_func in company_funcs.items():
         # make scraping function call.
         summary, new_company_jobs = website_func()
-        
+        print(f'{website_name}: {summary}')
+
         # skip if there are no new jobs
         if not new_company_jobs:
             continue
@@ -94,30 +90,31 @@ def main():
     SET UP CONNECTION AND SEND EMAIL
     """
     # send job alert per mail if new jobs were found (i.e. if bodies are not empty)
-    if text_body or html_body:
-        # include mail account credentials from environment variables
-        load_dotenv()
-        EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
-        EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
-        EMAIL_TO = os.getenv('EMAIL_TO')
-        
-        # set up email message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = 'JOB ALERT'
-        msg['From'] = EMAIL_ADDRESS
-        msg['To'] = EMAIL_TO
-        msg.attach(MIMEText(text_body, 'plain'))
-        msg.attach(MIMEText(html_body, 'html'))
-
-        # send email
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_ADDRESS, EMAIL_TO, msg.as_string())
-
-        print("New jobs, email notification sent.")
-    else:
+    if not text_body and not html_body:
         print("No new jobs.")
+        return
+    
+    # include mail account credentials from environment variables
+    load_dotenv()
+    EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
+    EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
+    EMAIL_TO = os.getenv('EMAIL_TO')
+    
+    # set up email message
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'JOB ALERT'
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = EMAIL_TO
+    msg.attach(MIMEText(text_body, 'plain'))
+    msg.attach(MIMEText(html_body, 'html'))
+
+    # send email
+    with smtplib.SMTP('smtp.gmail.com', 587) as server:
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        server.sendmail(EMAIL_ADDRESS, EMAIL_TO, msg.as_string())
+
+    print("New jobs, email notification sent.")
 
 
 if __name__ == '__main__':

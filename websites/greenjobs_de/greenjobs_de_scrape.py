@@ -1,14 +1,13 @@
 def greenjobs_de():
     # import libraries
+    import os
     import pickle
-    import math
-    import re
     import requests
     from bs4 import BeautifulSoup
 
     company_name = "greenjobs_de"
-
-
+    FILE_PATH = os.path.abspath(os.path.dirname(__file__))
+    
     """
     PARSE AND SCRAPE WEBPAGES FOR CURRENT JOB POSTINGS
     """
@@ -59,13 +58,13 @@ def greenjobs_de():
     """
     # open last saved job postings (create empty dict if nonexistent)
     try:
-        with open(f'websites/{company_name}/{company_name}_current_jobs_dict.pkl', 'rb') as f:
+        with open(f'{FILE_PATH}/{company_name}_current_jobs_dict.pkl', 'rb') as f:
             saved_jobs_dict = pickle.load(f)
     except FileNotFoundError:
         saved_jobs_dict = {} 
 
     # store current state of job postings for next execution
-    with open(f'websites/{company_name}/{company_name}_current_jobs_dict.pkl', 'wb') as f:
+    with open(f'{FILE_PATH}/{company_name}_current_jobs_dict.pkl', 'wb') as f:
         pickle.dump(current_jobs_dict, f)
 
 
@@ -74,10 +73,8 @@ def greenjobs_de():
     """
     # create list containing only ids of new jobs
     new_jobs = {job: current_jobs_dict[job] for job in current_jobs_dict if job not in saved_jobs_dict}
+    # create written summary
+    summary = f"{n_jobs_found} jobs found, {n_jobs_scraped} scraped, {len(current_jobs_dict)} stored, {len(new_jobs)} new."
     
-    # return dict with new job postings if any, otherwise return None
-    if new_jobs:
-        summary = f"{n_jobs_found} jobs found, {n_jobs_scraped} scraped, {len(current_jobs_dict)} stored, {len(new_jobs)} new."
-        return (summary, new_jobs)
-    else:
-        return (None, None)
+    # return touple of summary and dict with new job postings if any, otherwise return None
+    return (summary, new_jobs)

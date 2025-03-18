@@ -11,6 +11,7 @@ def main():
     from websites.greenjobs_de.greenjobs_de_scrape import greenjobs_de
 
 
+    # create function for flagging titles that contain certain words (desired + undesired)
     def contains_words(input_string: str, search_words: list) -> bool:
         """ Checks whether a string contains specified key words
         Args: 
@@ -22,6 +23,14 @@ def main():
         re_search_terms = "|".join(search_words)
         matches = re.findall(re_search_terms, input_string.lower())
         return len(matches) > 0
+
+    # define key words for relevant (pos) and irrelevant (neg) flagging
+    pos_search_terms = ["data", "analyst", "analysis", "analytics", "machine learning"]
+    pos_search_terms.extend(["daten", "analyse", "auswertung", "analytiker", "statistik"])
+    pos_search_terms.extend(["marktforschung", "markt", "forschung", "market", "research"])
+    pos_search_terms.extend([" ki ", " ai ", " ml "])
+    
+    neg_search_terms = ["trainee", "student", "studierend", "praktikum", "praktikant"]
 
 
     """
@@ -46,36 +55,38 @@ def main():
         if n_new_company_jobs == 0:
             continue
 
-        # initialize email bodies per company scraped
+        # add sorting and color coding by relevance (acc. to search terms defined above)
+        for job_details in new_company_jobs.values():
+            # initiate key - value pairs
+            job_details['relevance'] = 0
+            job_details['font_style'] = ''
+            # overwrite default if job title contains relevant words
+            if contains_words(job_details['title'], pos_search_terms):
+                job_details['relevance'] = 1
+                job_details['font_style'] = 'style="color:green;"'
+            # overwrite default or positive relevance if negative terms are present
+            if contains_words(job_details['title'], neg_search_terms):
+                job_details['relevance'] = -1
+                job_details['font_style'] = 'style="color:purple;"'
+
+        # sort dictionairy based on relevance (desc) and job title
+        new_company_jobs_sorted = dict(sorted(new_company_jobs.items(),
+                                              key=lambda x: (-x[1]['relevance'], x[1]['title'])))
+
+        # initialize email text sections per company scraped
         text_body_comp = f'{n_new_company_jobs} new jobs at {website_name}:\n{summary}\n\n'
         html_body_comp = (f'<big><b>{n_new_company_jobs} new jobs at {website_name}:</b></big> <br>'
                           f'<small><i>{summary}</i></small> <br><br>')
 
-        # gather information for each job
-        for job_details in new_company_jobs.values():
+        # add information for each job to company text section
+        for job_details in new_company_jobs_sorted.values():
             link = job_details['link']
             title = job_details['title']
             company = job_details['company']
             location = job_details['location']
             date = job_details['date_posted']
             details = job_details['details'] if 'details' in job_details else None
-
-            # Highlight titles if search words appear
-            pos_search_terms = ["data", "analyst", "analysis", "analytics", "machine learning"]
-            pos_search_terms.extend(["daten", "analyse", "auswertung", "analytiker", "statistik"])
-            pos_search_terms.extend(["marktforschung", "markt", "forschung", "market", "research"])
-            pos_search_terms.extend([" ki ", " ai ", " ml "])
-            
-            neg_search_terms = ["trainee", "student", "studierend", "praktikum", "praktikant"]
-
-            highlight_job_pos = contains_words(title, pos_search_terms)
-            highlight_job_neg = contains_words(title, neg_search_terms)
-
-            font_style = ''
-            if highlight_job_pos:
-                font_style = 'style="color:green;"'
-            if highlight_job_neg:
-                font_style = 'style="color:purple;"'
+            font_style = job_details['font_style']
 
             # Add job info to mail bodies
             text_body_comp += (f'Title: {title}:\nLink: {link}\nLocation: {location}')
@@ -93,11 +104,11 @@ def main():
         
         n_new_jobs_total += n_new_company_jobs
         
-    # create final body messages by joining individual body texts
+    # create final body messages by joining individual company body texts
     text_body = '<br><hr><br>'.join(ls_text_body)
     html_body = '<br><hr><br>'.join(ls_html_body)
 
-    print(n_new_jobs_total)
+
     """
     SET UP CONNECTION AND SEND EMAIL
     """

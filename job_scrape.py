@@ -30,6 +30,7 @@ def main():
     # initialize empty lists to store body texts for job alert message
     ls_text_body = []
     ls_html_body = []
+    n_new_jobs_total = 0
 
     # call scraping function of each website (return dictionary)
     company_funcs = {'Goodjobs EU': goodjobs_eu,
@@ -41,12 +42,14 @@ def main():
         print(f'{website_name}: {summary}')
 
         # skip if there are no new jobs
-        if not new_company_jobs:
+        n_new_company_jobs = len(new_company_jobs)
+        if n_new_company_jobs == 0:
             continue
 
-        # initialize email bodies
-        html_body = f'<big><b>New Jobs at {website_name}:</b></big> <br> <small><i>{summary}</i></small> <br><br>'
-        text_body = f'New Jobs at {website_name}:\n{summary}\n\n'
+        # initialize email bodies per company scraped
+        text_body_comp = f'{n_new_company_jobs} new jobs at {website_name}:\n{summary}\n\n'
+        html_body_comp = (f'<big><b>{n_new_company_jobs} new jobs at {website_name}:</b></big> <br>'
+                          f'<small><i>{summary}</i></small> <br><br>')
 
         # gather information for each job
         for job_details in new_company_jobs.values():
@@ -58,39 +61,48 @@ def main():
             details = job_details['details'] if 'details' in job_details else None
 
             # Highlight titles if search words appear
-            search_terms = ["data", "analyst", "analysis", "analytics", "machine learning"]
-            search_terms.extend(["daten", "analyse", "auswertung", "analytiker", "statistik"])
-            search_terms.extend(["marktforschung", "markt", "forschung", "market", "research"])
-            search_terms.extend([" ki ", " ai ", " ml "])
-            highlight_job = contains_words(title, search_terms)
+            pos_search_terms = ["data", "analyst", "analysis", "analytics", "machine learning"]
+            pos_search_terms.extend(["daten", "analyse", "auswertung", "analytiker", "statistik"])
+            pos_search_terms.extend(["marktforschung", "markt", "forschung", "market", "research"])
+            pos_search_terms.extend([" ki ", " ai ", " ml "])
+            
+            neg_search_terms = ["trainee", "student", "studierend", "praktikum", "praktikant"]
+
+            highlight_job_pos = contains_words(title, pos_search_terms)
+            highlight_job_neg = contains_words(title, neg_search_terms)
+
             font_style = ''
-            if highlight_job:
-                font_style += 'style="color:green;"'
+            if highlight_job_pos:
+                font_style = 'style="color:green;"'
+            if highlight_job_neg:
+                font_style = 'style="color:purple;"'
 
             # Add job info to mail bodies
-            html_body += (f'<a href="{link}" {font_style}><b>{title}</b></a>'
-                          f'<br>Company: {company}'
-                          f'<br>Location(s): {location}'
-                          f'<br>Posted/Deadline: {date}')
-            text_body += (f'Title: {title}:\nLink: {link}\nLocation: {location}')
+            text_body_comp += (f'Title: {title}:\nLink: {link}\nLocation: {location}')
+            html_body_comp += (f'<a href="{link}" {font_style}><b>{title}</b></a>'
+                               f'<br>Company: {company}'
+                               f'<br>Location(s): {location}'
+                               f'<br>Posted/Deadline: {date}')
             
             # Add element "details" to bodies if existent
-            html_body += f'<br>Details: {details}<br><br>' if details else '<br><br>'
-            text_body += f'\nDetails: {details}\n\n' if details else '\n\n'
-    
-        ls_text_body.append(text_body)
-        ls_html_body.append(html_body)
+            text_body_comp += f'\nDetails: {details}\n\n' if details else '\n\n'
+            html_body_comp += f'<br>Details: {details}<br><br>' if details else '<br><br>'
+        
+        ls_text_body.append(text_body_comp)
+        ls_html_body.append(html_body_comp)
+        
+        n_new_jobs_total += n_new_company_jobs
         
     # create final body messages by joining individual body texts
     text_body = '<br><hr><br>'.join(ls_text_body)
     html_body = '<br><hr><br>'.join(ls_html_body)
 
-
+    print(n_new_jobs_total)
     """
     SET UP CONNECTION AND SEND EMAIL
     """
     # send job alert per mail if new jobs were found (i.e. if bodies are not empty)
-    if not text_body and not html_body:
+    if n_new_jobs_total == 0:
         print("No new jobs.")
         return
     
@@ -102,7 +114,7 @@ def main():
     
     # set up email message
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = 'JOB ALERT'
+    msg['Subject'] = f'JOB ALERT ({n_new_jobs_total} new)'
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = EMAIL_TO
     msg.attach(MIMEText(text_body, 'plain'))

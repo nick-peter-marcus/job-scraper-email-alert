@@ -9,6 +9,7 @@ def main():
     # import scraping modules
     from websites.goodjobs_eu.goodjobs_eu_scrape import goodjobs_eu
     from websites.greenjobs_de.greenjobs_de_scrape import greenjobs_de
+    from websites.talents4good.talents4good_scrape import talents4good
 
 
     # create function for flagging titles that contain certain words (desired + undesired)
@@ -43,7 +44,8 @@ def main():
 
     # call scraping function of each website (return dictionary)
     company_funcs = {'Goodjobs EU': goodjobs_eu,
-                     'Greenjobs DE': greenjobs_de}
+                     'Greenjobs DE': greenjobs_de,
+                     'Talents4Good': talents4good}
 
     for website_name, website_func in company_funcs.items():
         # make scraping function call.

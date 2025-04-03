@@ -13,6 +13,8 @@ def main():
     from websites.ipsos.ipsos_scrape import ipsos
     from websites.niq.niq_scrape import niq
     from websites.index_de.index_de_scrape import index_de
+    from websites.telekom.telekom_scrape import telekom
+    from websites.ottobock.ottobock_scrape import ottobock
 
 
     # create function for flagging titles that contain certain words (desired + undesired)
@@ -34,7 +36,7 @@ def main():
     pos_search_terms.extend(["marktforschung", "markt", "forschung", "market", "research"])
     pos_search_terms.extend([" ki ", " ai ", " ml "])
     
-    neg_search_terms = ["trainee", "student", "studierend", "praktikum", "praktikant"]
+    neg_search_terms = ["trainee", "student", "studium", "studierend", "praktikum", "praktikant", "ausbildung"]
 
 
     """
@@ -46,12 +48,16 @@ def main():
     n_new_jobs_total = 0
 
     # call scraping function of each website (return dictionary)
-    company_funcs = {'Goodjobs EU': goodjobs_eu,
-                     'Greenjobs DE': greenjobs_de,
-                     'Talents4Good': talents4good,
-                     'Ipsos': ipsos,
-                     'NiQ': niq,
-                     'index': index_de}
+    company_funcs = {
+        'Goodjobs EU': goodjobs_eu,
+        'Greenjobs DE': greenjobs_de,
+        'Talents4Good': talents4good,
+        'Ipsos': ipsos,
+        'NiQ': niq,
+        'index': index_de,
+        'Telekom': telekom,
+        'Ottobock': ottobock,
+        }
 
     for website_name, website_func in company_funcs.items():
         # make scraping function call.

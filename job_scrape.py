@@ -1,11 +1,11 @@
 def main():
     # import libraries
     import os
-    import re
     import smtplib
     from dotenv import load_dotenv
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
+    from utils import add_sorting_keys
     # import scraping modules
     from websites.goodjobs_eu.goodjobs_eu_scrape import goodjobs_eu
     from websites.greenjobs_de.greenjobs_de_scrape import greenjobs_de
@@ -16,39 +16,7 @@ def main():
     from websites.telekom.telekom_scrape import telekom
     from websites.ottobock.ottobock_scrape import ottobock
 
-
-    # create function for flagging titles that contain certain words (desired + undesired)
-    def contains_words(input_string: str, search_words: list) -> bool:
-        """ Checks whether a string contains specified key words
-        Args: 
-            input_string (str): The text to be searched in
-            search_words (list): A list of words to be searched
-        Returns:
-            bool: True if any of the search_words appear in input_string.
-        """
-        re_search_terms = "|".join(search_words)
-        matches = re.findall(re_search_terms, input_string.lower())
-        return len(matches) > 0
-
-    # define key words for relevant (pos) and irrelevant (neg) flagging
-    pos_search_terms = ["data", "analyst", "analysis", "analytics", "machine learning"]
-    pos_search_terms.extend(["daten", "analyse", "auswertung", "analytiker", "statistik"])
-    pos_search_terms.extend(["marktforschung", "markt", "forschung", "market", "research"])
-    pos_search_terms.extend([" ki ", " ai ", " ml "])
-    
-    neg_search_terms = ["trainee", "student", "studium", "studierend", "praktikum", "praktikant", "ausbildung"]
-
-
-    """
-    POPULATE EMAIL BODY TEXTS WITH RESULTS OF SCRAPER MODULES
-    """
-    # initialize empty lists to store body texts for job alert message
-    ls_text_body = []
-    ls_html_body = []
-    n_new_jobs_total = 0
-    error_messages = ''
-
-    # call scraping function of each website (return dictionary)
+    # Specify which sites to scrape and the corresponding company/platform name
     company_funcs = {
         'Goodjobs EU': goodjobs_eu,
         'Greenjobs DE': greenjobs_de,
@@ -60,6 +28,25 @@ def main():
         'Ottobock': ottobock,
         }
 
+    # define key words for relevant (pos) and irrelevant (neg) flagging
+    pos_search_terms = ["data", "analyst", "analysis", "analytics", "machine learning",
+                        "daten", "analyse", "auswertung", "analytiker", "statistik",
+                        "marktforschung", "markt", "forschung", "market", "research", 
+                        " ki ", " ai ", " ml "]
+    neg_search_terms = ["trainee", "student", "studium", "studierend", "praktikum", 
+                        "praktikant", "ausbildung"]
+
+    # initialize empty objects to store scraping results and email text in
+    ls_text_body = []
+    ls_html_body = []
+    n_new_jobs_total = 0
+    error_messages = ''
+
+
+    """
+    POPULATE EMAIL BODY TEXTS WITH RESULTS OF SCRAPER MODULES
+    """
+    # call scraping function of each website (return dictionary)
     for website_name, website_func in company_funcs.items():
         # make scraping function call.
         try:
@@ -76,19 +63,7 @@ def main():
             continue
 
         # add sorting and color coding by relevance (acc. to search terms defined above)
-        for job_details in new_company_jobs.values():
-            # initiate key - value pairs
-            job_details['relevance'] = 0
-            job_details['font_style'] = ''
-            # overwrite default if job title contains relevant words
-            if contains_words(job_details['title'], pos_search_terms):
-                job_details['relevance'] = 1
-                job_details['font_style'] = 'style="color:green;"'
-            # overwrite default or positive relevance if negative terms are present
-            if contains_words(job_details['title'], neg_search_terms):
-                job_details['relevance'] = -1
-                job_details['font_style'] = 'style="color:purple;"'
-
+        new_company_jobs = add_sorting_keys(new_company_jobs, pos_search_terms, neg_search_terms)
         # sort dictionairy based on relevance (desc) and job title
         new_company_jobs_sorted = dict(sorted(new_company_jobs.items(),
                                               key=lambda x: (-x[1]['relevance'], x[1]['title'])))

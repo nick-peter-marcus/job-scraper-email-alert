@@ -15,6 +15,7 @@ def main():
     from websites.index_de.index_de_scrape import index_de
     from websites.telekom.telekom_scrape import telekom
     from websites.ottobock.ottobock_scrape import ottobock
+    from websites.recup.recup_scrape import recup
 
     # Specify which sites to scrape and the corresponding company/platform name
     company_funcs = {
@@ -26,6 +27,7 @@ def main():
         'index': index_de,
         'Telekom': telekom,
         'Ottobock': ottobock,
+        'RECUP': recup,
         }
 
     # define key words for relevant (pos) and irrelevant (neg) flagging
@@ -54,7 +56,7 @@ def main():
             print(f'{website_name}: {summary}')
         except Exception as e:
             error_messages += f'Error while scraping {website_name}:\n{e}\n\n'
-            print(f'{website_name}: ERROR')
+            print(f'{website_name}: ERROR ({e})')
             continue
 
         # skip if there are no new jobs

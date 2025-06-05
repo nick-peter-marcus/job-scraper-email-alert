@@ -46,6 +46,7 @@ def main():
     ls_text_body = []
     ls_html_body = []
     n_new_jobs_total = 0
+    error_messages = ''
 
     # call scraping function of each website (return dictionary)
     company_funcs = {
@@ -61,8 +62,13 @@ def main():
 
     for website_name, website_func in company_funcs.items():
         # make scraping function call.
-        summary, new_company_jobs = website_func()
-        print(f'{website_name}: {summary}')
+        try:
+            summary, new_company_jobs = website_func()
+            print(f'{website_name}: {summary}')
+        except Exception as e:
+            error_messages += f'Error while scraping {website_name}:\n{e}\n\n'
+            print(f'{website_name}: ERROR')
+            continue
 
         # skip if there are no new jobs
         n_new_company_jobs = len(new_company_jobs)
@@ -121,6 +127,11 @@ def main():
     # create final body messages by joining individual company body texts
     text_body = '<br><hr><br>'.join(ls_text_body)
     html_body = '<br><hr><br>'.join(ls_html_body)
+
+    # add captured error messages to end of texts
+    if error_messages:
+        text_body += f'<br><hr><br>{error_messages}'
+        html_body += f'<br><hr><br>{error_messages}'
 
 
     """

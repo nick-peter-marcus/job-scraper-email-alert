@@ -26,31 +26,21 @@ def greenjobs_de():
         r = requests.get(url, headers=headers)
         soup = BeautifulSoup(r.text, "html.parser")
 
-        job_table = soup.find("table", class_="overview_jobs")
-        job_rows = job_table.find_all("tr")
+        job_rows = soup.find_all("div", class_="jobitem")
         n_jobs_found += len(job_rows)
 
-        for job_row in job_rows:
-            link = job_row.find("a")["href"].replace(" ", "")
-            if link[:5] != "https":
-                link = "https://www.greenjobs.de" + link
-
-            tds = job_row.find_all("td")
-            if len(tds) <= 1:
-                n_jobs_found -= 1
-                continue
-            n_jobs_scraped += 1
-
-            title = tds[0].text.replace("Angebot von eejobs.de: Öffnet sich in neuem Fenster", "").strip()
-            company = tds[2].text.strip()
-            zip_code = tds[3].text.strip()
-            cities = tds[4].text.strip()
-            deadline = tds[5].text.strip()
+        for job_row in job_rows[:4]:
+            link = job_row.find("a")["href"].replace(" ", "%20")
+            title = job_row.find("a").text.strip()
+            company_location = job_row.text.strip()
+            company_location = company_location.replace(title, "")
+            company_location = company_location.replace("Angebot von eejobs.de: Öffnet sich in neuem Fenster", "")
+            company, location = company_location.split(" | ")
 
             current_jobs_dict.update({link: {"title": title,
                                              "company": company,
-                                             "location": cities,
-                                             "date_posted": deadline,
+                                             "location": location,
+                                             "date_posted": "N/A",
                                              "link": link}})
 
     """

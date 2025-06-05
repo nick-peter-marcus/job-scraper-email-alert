@@ -16,6 +16,7 @@ def main():
     from websites.telekom.telekom_scrape import telekom
     from websites.ottobock.ottobock_scrape import ottobock
     from websites.recup.recup_scrape import recup
+    from websites.the_female_company.the_female_company_scrape import the_female_company
 
     # Specify which sites to scrape and the corresponding company/platform name
     company_funcs = {
@@ -28,6 +29,7 @@ def main():
         'Telekom': telekom,
         'Ottobock': ottobock,
         'RECUP': recup,
+        'The Female Company': the_female_company,
         }
 
     # define key words for relevant (pos) and irrelevant (neg) flagging

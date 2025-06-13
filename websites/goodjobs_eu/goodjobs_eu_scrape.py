@@ -41,28 +41,45 @@ def goodjobs_eu():
             title = jobcard.find("h3").text.strip()
             link = jobcard["href"]
 
-            job_details = jobcard.find_all("div", recursive=False)[0].find_all("div", recursive=False)[0].find_all("div", recursive=False)[1].find_all("div", recursive=False)
+            job_details = jobcard \
+            .find("div") \
+            .find("div") \
+            .find_all("div", recursive=False)[2] \
+            .find_all("div", recursive=False)
             
-            location_spans = job_details[0].find("div").find_all("span", recursive=False)
-            location = ""
-            for location_span in location_spans:
-                location += location_span.text.strip()
-            remote = job_details[0].find("div").find("p").text.strip().replace("| ", "")
-            date_posted = job_details[1].text.strip()
-            full_time = job_details[2].text.strip()
-            language = job_details[3].text.strip()
-            try:
-                job_type = job_details[4].text.strip()
-            except:
-                job_type = "N/A"
-            
-            company = jobcard.find_all("div", recursive=False)[0].find_all("div", recursive=False)[1].find("p").text.strip()
+            salary, location, remote, date_posted, full_time, job_type = None, None, None, None, None, None
 
+            if len(job_details) == 6:
+                salary = job_details[0].find("span").text.strip()
+                location = job_details[1].find("span").text.strip()
+                remote = job_details[1].find("p").text.strip().replace("| ", "")
+                date_posted = job_details[2].text.strip()
+                full_time = job_details[3].find("p").text.strip()
+                job_type = job_details[4].text.strip()
+            if len(job_details) <= 5:
+                location = job_details[0].find("span").text.strip()
+                remote = job_details[0].find("p").text.strip().replace("| ", "")
+                date_posted = job_details[1].text.strip()
+                full_time = job_details[2].find("p").text.strip()
+                job_type = job_details[3].text.strip()
+
+            company = jobcard \
+                .find("div") \
+                .find_all("div", recursive=False)[1] \
+                .find("p") \
+                .text.strip()
+            
+            additional_details = " | ".join([remote, full_time])
+            if job_type:
+                additional_details += f" | {job_type}"
+            if salary:
+                additional_details += f" | {salary}"
+                
             current_jobs_dict.update({link: {"title": title,
                                              "company": company,
                                              "location": location,
                                              "date_posted": date_posted,
-                                             "details": " | ".join([remote, full_time, job_type]),
+                                             "details": additional_details,
                                              "link": link}})
 
     """
@@ -86,7 +103,7 @@ def goodjobs_eu():
     # create list containing only ids of new jobs
     new_jobs = {job: current_jobs_dict[job] for job in current_jobs_dict if job not in saved_jobs_dict}
     # create written summary
-    summary = f"{n_jobs} jobs found, {len(current_jobs_dict)} scraped, {len(new_jobs)} new jobs."
+    summary = f"{n_jobs} jobs listed, {len(current_jobs_dict)} scraped, {len(new_jobs)} new jobs."
 
     # return touple of summary and dict with new job postings if any, otherwise return None
     return (summary, new_jobs)

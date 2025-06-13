@@ -28,14 +28,14 @@ def greenjobs_de():
         job_rows = soup.find_all("div", class_="jobitem")
         n_jobs_found += len(job_rows)
 
-        for job_row in job_rows[:4]:
+        for job_row in job_rows:
             link = job_row.find("a")["href"].replace(" ", "%20")
             title = job_row.find("a").text.strip()
             company_location = job_row.text.strip()
             company_location = company_location.replace(title, "")
             company_location = company_location.replace("Angebot von eejobs.de: Öffnet sich in neuem Fenster", "")
             company, location = company_location.split(" | ")
-
+            
             current_jobs_dict.update({link: {"title": title,
                                              "company": company,
                                              "location": location,

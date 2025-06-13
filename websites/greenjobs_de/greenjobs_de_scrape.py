@@ -20,7 +20,6 @@ def greenjobs_de():
     # loop through pages, extract all job postings, and store in dict
     current_jobs_dict = {}
     n_jobs_found = 0
-    n_jobs_scraped = 0
 
     for url in urls:
         r = requests.get(url, headers=headers)
@@ -64,7 +63,7 @@ def greenjobs_de():
     # create list containing only ids of new jobs
     new_jobs = {job: current_jobs_dict[job] for job in current_jobs_dict if job not in saved_jobs_dict}
     # create written summary
-    summary = f"{n_jobs_found} jobs found, {n_jobs_scraped} scraped, {len(current_jobs_dict)} stored, {len(new_jobs)} new."
+    summary = f"{n_jobs_found} jobs found, {len(current_jobs_dict)} scraped, {len(new_jobs)} new."
     
     # return touple of summary and dict with new job postings if any, otherwise return None
     return (summary, new_jobs)
